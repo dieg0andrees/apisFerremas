@@ -177,3 +177,54 @@ def eliminar_usuario(rut_eliminar:str):
         return {"mensaje": "Usuario Eliminado Correctamente"}
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))
+    
+#Patch: Altualizar algunos datos noma
+from typing import Optional
+@router.patch("/{rut_actualizar}")
+def actualizar_parcial(rut_actualizar:str, nombre_user:Optional[str]=None, p_apellido:Optional[str]=None, 
+                       s_apellido:Optional[str]=None, correo_user:Optional[str]=None, 
+                       contrasena_user:Optional[str]=None, id_genero:Optional[int]=None, id_rol:Optional[int]=None):
+    try:
+        if not nombre_user and not p_apellido and not s_apellido and not correo_user and not contrasena_user and not id_genero and not id_rol:
+            raise HTTPException(status_code=400, detail="Debe enviar por lo menos 1 dato")
+        
+        cone = get_conexion()
+        cursor = cone.cursor()
+
+        campos = []
+        valores = {"rut_user": rut_actualizar}
+
+        if nombre_user:
+            campos.append("nombre_user = :nombre_user")
+            valores["nombre_user"] = nombre_user
+        if p_apellido:
+            campos.append("p_apellido = :p_apellido")
+            valores["p_apellido"] = p_apellido
+        if s_apellido:
+            campos.append("s_apellido = :s_apellido")
+            valores["s_apellido"] = s_apellido
+        if correo_user:
+            campos.append("correo_user = :correo_user")
+            valores["correo_user"] = correo_user
+        if contrasena_user:
+            campos.append("contrasena_user = :contrasena_user")
+            valores["contrasena_user"] = contrasena_user
+        if id_genero:
+            campos.append("id_genero = :id_genero")
+            valores["id_genero"] = id_genero
+        if id_rol:
+            campos.append("id_rol = :id_rol")
+            valores["id_rol"] = id_rol
+        
+        cursor.execute(f"update usuarios set {', '.join(campos)} where rut_user = :rut_user", valores)
+        if cursor.rowcount==0:
+            cursor.close()
+            cone.close()
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        cone.commit()
+        cursor.close()
+        cone.close()
+        return {"mensaje": "Usuario actualizado correctamente"}
+
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=str(ex))
