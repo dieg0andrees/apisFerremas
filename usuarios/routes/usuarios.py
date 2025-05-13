@@ -47,7 +47,7 @@ def obtener_usuarios():
         raise HTTPException(status_code=500, detail=str(ex))
     
 #Segundo Get: Usuario a buscar por rut
-@router.get("{rut_buscar}")
+@router.get("/{rut_buscar}")
 def obtener_usuario(rut_buscar: int):
     try:
         cone = get_conexion()
@@ -116,5 +116,64 @@ def agregar_usuario(rut_user:str, nombre_user:str, p_apellido:str, s_apellido:st
         cursor.close()
         cone.close()
         return {"mensaje": "Usuario agregado con exito"}    
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=str(ex))
+    
+#Put: Actualizar usuarios
+@router.put("/{rut_actualizar}")
+def actuliazar_usuario(rut_actualizar:str, nombre_user:str, p_apellido:str, s_apellido:str, correo_user:str, contrasena_user:str, id_genero:int, id_rol:int):
+    try:
+        cone = get_conexion()
+        cursor = cone.cursor()
+        cursor.execute(
+        """
+        update usuarios
+        set 
+        nombre_user = :nombre_user, 
+        p_apellido = :p_apellido, 
+        s_apellido = :s_apellido, 
+        correo_user = :correo_user,
+        contrasena_user = :contrasena_user,
+        id_genero = :id_genero, 
+        id_rol = :id_rol
+        where rut_user = :rut 
+        """, {"rut":rut_actualizar, 
+              "nombre_user":nombre_user, 
+              "p_apellido":p_apellido, 
+              "s_apellido":s_apellido, 
+              "correo_user":correo_user, 
+              "contrasena_user":contrasena_user, 
+              "id_genero":id_genero, 
+              "id_rol":id_rol})
+        if cursor.rowcount==0:
+            cursor.close()
+            cone.close()
+            raise HTTPException(status_code=404, detail="Usuario no Encontrado")
+        
+        cone.commit()
+        cursor.close()
+        cone.close()
+        return {"mensaje": "Usuario actualizado correctamente"}
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=str(ex))
+    
+#Delete: Eliminar Usuarios
+@router.delete("/{rut_eliminar}")
+def eliminar_usuario(rut_eliminar:str):
+    try:
+        cone = get_conexion()
+        cursor = cone.cursor()
+        cursor.execute(
+        """
+        delete from usuarios where rut_user = :rut
+        """, {"rut" :rut_eliminar})
+        if cursor.rowcount==0:
+            cursor.close()
+            cone.close()
+            raise HTTPException(status_code=404, detail="Usuario no Encontrado")
+        cone.commit()
+        cursor.close()
+        cone.close()
+        return {"mensaje": "Usuario Eliminado Correctamente"}
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))
