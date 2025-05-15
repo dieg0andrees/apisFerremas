@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from usuarios.database import get_conexion
+from pydantic import BaseModel
 
 router = APIRouter(
     prefix="/usuarios",
@@ -86,36 +87,37 @@ def obtener_usuario(rut_buscar: int):
         raise HTTPException(status_code=500, detail=str(ex))
 
 
+class UsuarioCrear(BaseModel):
+    rut_user: str
+    nombre_user: str
+    p_apellido: str
+    s_apellido: str
+    correo_user: str
+    contrasena_user: str
+    id_genero: int
+    id_rol: int
+
+
 #Post: Agregar usuarios
 @router.post("/")
-def agregar_usuario(rut_user:str, nombre_user:str, p_apellido:str, s_apellido:str, correo_user:str, contrasena_user:str, id_genero:int, id_rol:int):
+def agregar_usuario(usuario: UsuarioCrear):
     try:
         cone = get_conexion()
         cursor = cone.cursor()
         cursor.execute(
             """
-            insert into usuarios 
-            values(
-            :rut_user, 
-            :nombre_user, 
-            :p_apellido, 
-            :s_apellido, 
-            :correo_user, 
-            :contrasena_user, 
-            :id_genero, 
-            :id_rol)
-            """, {"rut_user":rut_user, 
-                  "nombre_user":nombre_user, 
-                  "p_apellido":p_apellido, 
-                  "s_apellido":s_apellido , 
-                  "correo_user":correo_user, 
-                  "contrasena_user":contrasena_user, 
-                  "id_genero":id_genero, 
-                  "id_rol":id_rol})
+            INSERT INTO usuarios 
+            VALUES (
+                :rut_user, :nombre_user, :p_apellido, :s_apellido,
+                :correo_user, :contrasena_user, :id_genero, :id_rol
+            )
+            """,
+            usuario.dict()
+        )
         cone.commit()
         cursor.close()
         cone.close()
-        return {"mensaje": "Usuario agregado con exito"}    
+        return {"mensaje": "Usuario agregado con éxito"}
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))
     
