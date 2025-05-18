@@ -130,7 +130,20 @@ insert into rol values(5, 'Administrador');
 
 insert into usuarios values('153654321', 'Pedro', 'Alamos', 'Contreras', 'pedro@gmail.com', '12345678', 1, 1);
 
+insert into marca values(1, 'Dewalt');
+insert into marca values(2, 'Bauker');
+
+insert into tipo_producto values(1, 'Herramienta Electronica');
+
+insert into producto values(1, 'Taladro Percutor Electrico', 31900, 3, 2, 1);
+insert into producto values(2, 'Taladro Inalambrico', 48500, 2, 2, 1);
 commit;
+
+
+
+
+
+
 
 
 
