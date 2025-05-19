@@ -121,37 +121,37 @@ def agregar_usuario(usuario: UsuarioCrear):
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))
     
+
+class UsuarioActualizar(BaseModel):
+    nombre_user: str
+    p_apellido: str
+    s_apellido: str
+    correo_user: str
+    contrasena_user: str
+    id_genero: int
+    id_rol: int
+
 #Put: Actualizar usuarios
 @router.put("/{rut_actualizar}")
-def actuliazar_usuario(rut_actualizar:str, nombre_user:str, p_apellido:str, s_apellido:str, correo_user:str, contrasena_user:str, id_genero:int, id_rol:int):
+def actualizar_usuario(rut_actualizar: str, datos: UsuarioActualizar):
     try:
         cone = get_conexion()
         cursor = cone.cursor()
-        cursor.execute(
-        """
-        update usuarios
-        set 
-        nombre_user = :nombre_user, 
-        p_apellido = :p_apellido, 
-        s_apellido = :s_apellido, 
-        correo_user = :correo_user,
-        contrasena_user = :contrasena_user,
-        id_genero = :id_genero, 
-        id_rol = :id_rol
-        where rut_user = :rut 
-        """, {"rut":rut_actualizar, 
-              "nombre_user":nombre_user, 
-              "p_apellido":p_apellido, 
-              "s_apellido":s_apellido, 
-              "correo_user":correo_user, 
-              "contrasena_user":contrasena_user, 
-              "id_genero":id_genero, 
-              "id_rol":id_rol})
-        if cursor.rowcount==0:
-            cursor.close()
-            cone.close()
-            raise HTTPException(status_code=404, detail="Usuario no Encontrado")
+        cursor.execute("""
+            UPDATE usuarios SET 
+                nombre_user = :nombre_user, 
+                p_apellido = :p_apellido, 
+                s_apellido = :s_apellido,
+                correo_user = :correo_user,
+                contrasena_user = :contrasena_user,
+                id_genero = :id_genero,
+                id_rol = :id_rol
+            WHERE rut_user = :rut
+        """, {**datos.dict(), "rut": rut_actualizar})
         
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
         cone.commit()
         cursor.close()
         cone.close()
