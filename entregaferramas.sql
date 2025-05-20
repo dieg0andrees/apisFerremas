@@ -8,6 +8,7 @@ drop table tipo_producto;
 drop table producto;
 drop table usuarios;
 drop table pedido;
+drop sequence seq_producto_id;
 CREATE TABLE GENERO (
     id_genero INTEGER PRIMARY KEY,
     descripcion VARCHAR2(50)
@@ -48,6 +49,7 @@ CREATE TABLE PRODUCTO (
     nombre_producto VARCHAR2(50),
     precio_producto INTEGER,
     stock_producto INTEGER,
+    imagenes varchar(250), 
     id_marca INTEGER,
     id_tipo_producto INTEGER,
     FOREIGN KEY (id_marca) REFERENCES MARCA(id_marca),
@@ -123,20 +125,29 @@ insert into genero values(3, 'Otro');
 insert into genero values(4, 'Prefiere no decirlo');
 
 insert into rol values(1, 'Cliente');
-insert into rol values(2, 'Bodeguero');
-insert into rol values(3, 'Contador');
-insert into rol values(4, 'Vendedor');
-insert into rol values(5, 'Administrador');
+insert into rol values(2, 'Vendedor');
+insert into rol values(3, 'bodeguero');
+insert into rol values(4, 'Contador');
+insert into rol values(5, 'Admin');
 
-insert into usuarios values('153654321', 'Pedro', 'Alamos', 'Contreras', 'pedro@gmail.com', '12345678', 1, 1);
+insert into usuarios values('153654321', 'Pedro', 'Alamos', 'Contreras', 'pedro@gmail.com', '12345678', 1, 5);
 
 insert into marca values(1, 'Dewalt');
 insert into marca values(2, 'Bauker');
+insert into marca values(3, 'Knipex');
+insert into marca values(4, 'Stanley');
+insert into marca values(5, 'Makita');
+insert into marca values(6, 'Telwin');
 
-insert into tipo_producto values(1, 'Herramienta Electronica');
+insert into tipo_producto values(1, 'Herramienta Electrica');
+insert into tipo_producto values(2, 'Herramienta Manuales');
+insert into tipo_producto values(3, 'Herramienta Medicion');
+insert into tipo_producto values(4, 'Herramienta Corte');
+insert into tipo_producto values(5, 'Materiales de construccion');
 
-insert into producto values(1, 'Taladro Percutor Electrico', 31900, 3, 2, 1);
-insert into producto values(2, 'Taladro Inalambrico', 48500, 2, 2, 1);
+create sequence seq_producto_id
+start with 1 
+increment by 1;
 commit;
 
 

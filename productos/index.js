@@ -26,7 +26,8 @@ app.get('/productos', async(req, res) =>{
             producto.PRECIO_PRODUCTO,
             producto.STOCK_PRODUCTO,
             MARCA.DESCRIPCION,
-            tipo_producto.DESCRIPCION
+            tipo_producto.DESCRIPCION,
+            producto.imagenes
         from producto
         join MARCA on producto.id_marca = MARCA.ID_MARCA
         join tipo_producto on producto.ID_TIPO_PRODUCTO = tipo_producto.id_tipo_producto`)
@@ -36,7 +37,8 @@ app.get('/productos', async(req, res) =>{
             precio_producto: row[2],
             stock_producto: row[3],
             id_marca: row[4],
-            id_tipo_producto: row[5]
+            id_tipo_producto: row[5],
+            imagenes: row[6]
         })))
     } catch (ex) {
         res.status(500).json({error: ex.message})
@@ -57,7 +59,8 @@ app.get('/productos/:id_producto', async(req, res) =>{
             producto.PRECIO_PRODUCTO,
             producto.STOCK_PRODUCTO,
             MARCA.DESCRIPCION,
-            tipo_producto.DESCRIPCION
+            tipo_producto.DESCRIPCION,
+            producto.imagenes
         from producto
         join MARCA on producto.id_marca = MARCA.ID_MARCA
         join tipo_producto on producto.ID_TIPO_PRODUCTO = tipo_producto.id_tipo_producto
@@ -72,7 +75,8 @@ app.get('/productos/:id_producto', async(req, res) =>{
             precio_producto: row[2],
             stock_producto: row[3],
             id_marca: row[4],
-            id_tipo_producto: row[5]
+            id_tipo_producto: row[5],
+            imagenes: row[6]
             })
         }
     }catch (error){
@@ -84,7 +88,7 @@ app.get('/productos/:id_producto', async(req, res) =>{
 
 app.post('/productos', async (req, res) =>{
     let cone
-    const {id_producto, nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto} = req.body
+    const {nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto, imagenes} = req.body
     try{
         cone = await oracledb.getConnection(dbConfig)
         await cone.execute(
@@ -94,16 +98,18 @@ app.post('/productos', async (req, res) =>{
         precio_producto,
         stock_producto,
         id_marca,
-        id_tipo_producto
+        id_tipo_producto,
+        imagenes
         )
         values(
-        :id_producto,
+        seq_producto_id.nextval,
         :nombre_producto,
         :precio_producto,
         :stock_producto,
         :id_marca,
-        :id_tipo_producto
-        )`, {id_producto, nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto},
+        :id_tipo_producto,
+        :imagenes
+        )`, {nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto, imagenes},
         {autoCommit: true}
         )
         res.status(201).json({mensaje: "Producto creado"})
@@ -117,7 +123,7 @@ app.post('/productos', async (req, res) =>{
 app.put('/productos/:id_producto', async(req, res) =>{
     let cone
     const id_producto = parseInt(req.params.id_producto)
-    const {nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto} = req.body
+    const {nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto, imagenes} = req.body
     try{
         cone = await oracledb.getConnection(dbConfig)
         const result = await cone.execute(`
@@ -127,9 +133,10 @@ app.put('/productos/:id_producto', async(req, res) =>{
             precio_producto = :precio_producto,
             stock_producto = :stock_producto,
             id_marca = :id_marca,
-            id_tipo_producto = :id_tipo_producto
+            id_tipo_producto = :id_tipo_producto,
+            imagenes = :imagenes
             where id_producto = :id_producto
-            `, {id_producto, nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto}, 
+            `, {id_producto, nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto, imagenes}, 
             {autoCommit: true}
         )
         if (result.rowsAffected===0){
@@ -168,7 +175,7 @@ app.delete('/productos/:id_producto', async(req, res) =>{
 app.patch('/productos/:id_producto', async(req, res) =>{
     let cone
     const id_producto = parseInt(req.params.id_producto)
-    const {nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto} = req.body
+    const {nombre_producto, precio_producto, stock_producto, id_marca, id_tipo_producto, imagenes} = req.body
     try{
         cone = await oracledb.getConnection(dbConfig)
         let campos = []
@@ -193,6 +200,11 @@ app.patch('/productos/:id_producto', async(req, res) =>{
             campos.push('id_tipo_producto = :id_tipo_producto')
             valores.id_tipo_producto = id_tipo_producto
         }
+        if (imagenes !== undefined){
+            campos.push('imagenes = :imagenes')
+            valores.imagenes = imagenes
+        }
+
         if(campos.length===0){
             res.status(400).json({mensaje: 'No se enviaron campos para actulizar'})
         }
