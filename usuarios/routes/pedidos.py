@@ -115,3 +115,39 @@ def obtener_pedidos():
         return pedidos
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))
+    
+    
+@router.get("/{id_pedido}")
+def buscar_pedido(id_pedido: int):
+    try:
+        cone = get_conexion()
+        cursor = cone.cursor()
+        cursor.execute("""
+        SELECT
+            pedido.FECHA_PEDIDO,
+            pedido.CANTIDAD_PEDIDO,
+            pedido.SUBTOTAL_PEDIDO,
+            pedido.RUT_USER,
+            estado_pedido.DESCRIPCION
+        FROM pedido
+        join estado_pedido on pedido.id_estado_pedido = estado_pedido.ID_ESTADO_PEDIDO
+        where id_pedido =: id_pedido """, 
+        {"id_pedido": id_pedido})
+
+        pedido = cursor.fetchone()
+        cursor.close()
+        cone.close()
+
+        if not pedido:
+            raise HTTPException(status_code=404, detail="Pedido no Encontrado")
+        return{
+            "id_pedido": id_pedido,
+            "fecha_pedido": pedido[0],
+            "cantidad_pedido": pedido[1],
+            "subtotal_pedido": pedido[2],
+            "rut_user": pedido[3],
+            "estado_pedido": pedido[4],
+        }        
+  
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=str(ex))
