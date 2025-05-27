@@ -13,6 +13,7 @@ class PedidoCrear(BaseModel):
     cantidad_pedido: int
     subtotal_pedido: int
     rut_user: str
+    id_estado_pedido: int  # Nuevo campo
     id_productos: list[int]
 
 @router.post("/")
@@ -23,14 +24,16 @@ def crear_pedido(pedido: PedidoCrear):
         cone = get_conexion()
         cursor = cone.cursor()
 
-        # Crear variable de salida para id_pedido
         id_pedido_var = cursor.var(int)
 
-        # Insertar el pedido y obtener el ID generado
         cursor.execute("""
             BEGIN
-                INSERT INTO pedido (id_pedido, fecha_pedido, cantidad_pedido, subtotal_pedido, rut_user)
-                VALUES (seq_id_pedido.NEXTVAL, :fecha_pedido, :cantidad_pedido, :subtotal_pedido, :rut_user)
+                INSERT INTO pedido (
+                    id_pedido, fecha_pedido, cantidad_pedido, subtotal_pedido, rut_user, id_estado_pedido
+                )
+                VALUES (
+                    seq_id_pedido.NEXTVAL, :fecha_pedido, :cantidad_pedido, :subtotal_pedido, :rut_user, :id_estado_pedido
+                )
                 RETURNING id_pedido INTO :id_pedido;
             END;
         """, {
@@ -38,16 +41,15 @@ def crear_pedido(pedido: PedidoCrear):
             "cantidad_pedido": pedido.cantidad_pedido,
             "subtotal_pedido": pedido.subtotal_pedido,
             "rut_user": pedido.rut_user,
+            "id_estado_pedido": pedido.id_estado_pedido,
             "id_pedido": id_pedido_var
         })
 
         id_pedido = id_pedido_var.getvalue()
 
-        # Validar que la lista de productos no esté vacía
         if not pedido.id_productos:
             raise HTTPException(status_code=400, detail="La lista de productos no puede estar vacía.")
 
-        # Insertar cada producto en producto_pedido
         for id_producto in pedido.id_productos:
             cursor.execute("""
                 INSERT INTO producto_pedido (id_producto_pedido, id_producto, id_pedido)
@@ -75,3 +77,4 @@ def crear_pedido(pedido: PedidoCrear):
             cursor.close()
         if cone:
             cone.close()
+

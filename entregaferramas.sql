@@ -1,3 +1,4 @@
+drop table producto_pedido;
 drop table genero;
 drop table estado_pago;
 drop table marca;
@@ -9,9 +10,17 @@ drop table producto;
 drop table usuarios;
 drop table pedido;
 drop sequence seq_producto_id;
+drop sequence seq_id_pedido;
+drop sequence seq_producto_pedido;
+
 CREATE TABLE GENERO (
     id_genero INTEGER PRIMARY KEY,
     descripcion VARCHAR2(50)
+);
+
+create table estado_pedido (
+    id_estado_pedido integer primary key,
+    descripcion varchar2(50)
 );
 
 CREATE TABLE ROL (
@@ -116,8 +125,19 @@ CREATE TABLE PEDIDO (
     cantidad_pedido INTEGER,
     subtotal_pedido INTEGER,
     rut_user VARCHAR2(10),
-    FOREIGN KEY (rut_user) REFERENCES USUARIOS(rut_user)
+    id_estado_pedido integer,
+    FOREIGN KEY (rut_user) REFERENCES USUARIOS(rut_user),
+    FOREIGN key (id_estado_pedido) references estado_pedido(id_estado_pedido)
 );
+
+create table producto_pedido (
+    id_producto_pedido integer primary key,
+    id_producto integer,
+    id_pedido integer,
+    FOREIGN key (id_producto) references producto(id_producto),
+    FOREIGN key (id_pedido) references pedido(id_pedido)
+);
+
 
 insert into genero values(1, 'Masculino');
 insert into genero values(2, 'Femenino');
@@ -145,17 +165,25 @@ insert into tipo_producto values(3, 'Herramienta Medicion');
 insert into tipo_producto values(4, 'Herramienta Corte');
 insert into tipo_producto values(5, 'Materiales de construccion');
 
+insert into estado_pedido values(1, 'Por pagar');
+insert into estado_pedido values(2, 'Pagado');
+insert into estado_pedido values(3, 'Aprobado');
+insert into estado_pedido values(4, 'Rechazado');
+insert into estado_pedido values(5, 'Entregado');
+insert into estado_pedido values(6, 'Preparado');
+insert into estado_pedido values(7, 'En preparacion');
+
 create sequence seq_producto_id
 start with 1 
 increment by 1;
+
+CREATE SEQUENCE seq_id_pedido
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE seq_producto_pedido
+START WITH 1
+INCREMENT BY 1;
+
 commit;
-
-
-
-
-
-
-
-
-
 
