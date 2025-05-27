@@ -78,3 +78,68 @@ def crear_pedido(pedido: PedidoCrear):
         if cone:
             cone.close()
 
+@router.get("/")
+def obtener_pedidos():
+    try:
+        cone = get_conexion()
+        cursor = cone.cursor()
+        cursor.execute("""
+        SELECT
+            pedido.ID_PEDIDO,
+            pedido.FECHA_PEDIDO,
+            pedido.CANTIDAD_PEDIDO,
+            pedido.SUBTOTAL_PEDIDO,
+            pedido.RUT_USER,
+            estado_pedido.DESCRIPCION
+        FROM pedido
+        join estado_pedido on pedido.id_estado_pedido = estado_pedido.ID_ESTADO_PEDIDO
+        """)
+        pedidos = []
+
+        for id_pedido, fecha_pedido, cantidad_pedido, subtotal_pedido, rut_user, descripcion in cursor:
+            pedidos.append({
+                "id_pedido": id_pedido,
+                "fecha_pedido": fecha_pedido,
+                "cantidad_pedido": cantidad_pedido,
+                "subtotal_pedido": subtotal_pedido,
+                "rut_user": rut_user,
+                "descripcion": descripcion
+            })
+        cursor.close()
+        cone.close()
+        return pedidos
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=str(ex))
+    
+
+@router.get("/")
+def obtener_productos_pedidos():
+    try:
+        cone = get_conexion()
+        cursor = cone.cursor()
+        cursor.execute("""
+        SELECT
+            producto_pedido.ID_PEDIDO,
+            producto.NOMBRE_PRODUCTO,
+            marca.DESCRIPCION,
+            producto.PRECIO_PRODUCTO,
+            tipo_producto.DESCRIPCION as tp
+        FROM producto_pedido
+        join producto on producto_pedido.ID_PRODUCTO = producto.ID_PRODUCTO
+        join marca on producto.id_marca = marca.id_marca
+        join tipo_producto on producto.ID_TIPO_PRODUCTO = tipo_producto.ID_TIPO_PRODUCTO
+        """)
+        producto_pedidos = []
+        for id_pedido, nombre_producto, descripcion, precio_producto, tp in cursor:
+            producto_pedidos.append({
+                "id_pedido": id_pedido,
+                "nombre_producto": nombre_producto,
+                "marca_descripcion": descripcion,
+                "precio_producto": precio_producto,
+                "tipo_producto": tp
+            })
+        cursor.close()
+        cone.close()
+        return producto_pedidos
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=str(ex))
