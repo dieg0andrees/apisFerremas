@@ -8,13 +8,17 @@ router = APIRouter(
     tags=["Pedidos"]
 )
 
+class ProductoPedido(BaseModel):
+    id_producto: int
+    cantidad_producto: int
+
 class PedidoCrear(BaseModel):
     fecha_pedido: date
     cantidad_pedido: int
     subtotal_pedido: int
     rut_user: str
-    id_estado_pedido: int  # Nuevo campo
-    id_productos: list[int]
+    id_estado_pedido: int
+    id_productos: list[ProductoPedido]
 
 @router.post("/")
 def crear_pedido(pedido: PedidoCrear):
@@ -50,21 +54,22 @@ def crear_pedido(pedido: PedidoCrear):
         if not pedido.id_productos:
             raise HTTPException(status_code=400, detail="La lista de productos no puede estar vacía.")
 
-        for id_producto in pedido.id_productos:
+        for producto in pedido.id_productos:
             cursor.execute("""
-                INSERT INTO producto_pedido (id_producto_pedido, id_producto, id_pedido)
-                VALUES (seq_producto_pedido.NEXTVAL, :id_producto, :id_pedido)
+                INSERT INTO producto_pedido (id_producto_pedido, id_producto, id_pedido, cantidad_producto)
+                VALUES (seq_producto_pedido.NEXTVAL, :id_producto, :id_pedido, :cantidad_producto)
             """, {
-                "id_producto": id_producto,
-                "id_pedido": id_pedido
+                "id_producto": producto.id_producto,
+                "id_pedido": id_pedido,
+                "cantidad_producto": producto.cantidad_producto
             })
 
         cone.commit()
 
         return {
-            "mensaje": "Pedido y productos asociados creados correctamente",
+            "mensaje": "Pedido creados correctamente",
             "id_pedido": id_pedido,
-            "productos": pedido.id_productos
+            "productos": [{"id": p.id_producto, "cantidad": p.cantidad_producto} for p in pedido.id_productos]
         }
 
     except Exception as ex:
@@ -108,38 +113,5 @@ def obtener_pedidos():
         cursor.close()
         cone.close()
         return pedidos
-    except Exception as ex:
-        raise HTTPException(status_code=500, detail=str(ex))
-    
-
-@router.get("/")
-def obtener_productos_pedidos():
-    try:
-        cone = get_conexion()
-        cursor = cone.cursor()
-        cursor.execute("""
-        SELECT
-            producto_pedido.ID_PEDIDO,
-            producto.NOMBRE_PRODUCTO,
-            marca.DESCRIPCION,
-            producto.PRECIO_PRODUCTO,
-            tipo_producto.DESCRIPCION as tp
-        FROM producto_pedido
-        join producto on producto_pedido.ID_PRODUCTO = producto.ID_PRODUCTO
-        join marca on producto.id_marca = marca.id_marca
-        join tipo_producto on producto.ID_TIPO_PRODUCTO = tipo_producto.ID_TIPO_PRODUCTO
-        """)
-        producto_pedidos = []
-        for id_pedido, nombre_producto, descripcion, precio_producto, tp in cursor:
-            producto_pedidos.append({
-                "id_pedido": id_pedido,
-                "nombre_producto": nombre_producto,
-                "marca_descripcion": descripcion,
-                "precio_producto": precio_producto,
-                "tipo_producto": tp
-            })
-        cursor.close()
-        cone.close()
-        return producto_pedidos
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))

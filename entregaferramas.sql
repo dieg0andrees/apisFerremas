@@ -100,14 +100,6 @@ CREATE TABLE INVENTARIO (
     FOREIGN KEY (id_sucursal) REFERENCES SUCURSAL(id_sucursal)
 );
 
-CREATE TABLE PRODUCTO_PEDIDO (
-    id_producto_pedido INTEGER PRIMARY KEY,
-    id_producto INTEGER,
-    id_pedido INTEGER,
-    FOREIGN KEY (id_producto) REFERENCES PRODUCTO(id_producto),
-    FOREIGN KEY (id_pedido) REFERENCES PEDIDO(id_pedido)
-);
-
 CREATE TABLE SUCURSAL (
     id_sucursal INTEGER PRIMARY KEY,
     direccion_sucursal VARCHAR2(50),
@@ -186,4 +178,6 @@ START WITH 1
 INCREMENT BY 1;
 
 commit;
+
+
 
