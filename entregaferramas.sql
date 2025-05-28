@@ -126,6 +126,7 @@ create table producto_pedido (
     id_producto_pedido integer primary key,
     id_producto integer,
     id_pedido integer,
+    cantidad_producto integer,
     FOREIGN key (id_producto) references producto(id_producto),
     FOREIGN key (id_pedido) references pedido(id_pedido)
 );
@@ -142,7 +143,7 @@ insert into rol values(3, 'bodeguero');
 insert into rol values(4, 'Contador');
 insert into rol values(5, 'Admin');
 
-insert into usuarios values('153654321', 'Pedro', 'Alamos', 'Contreras', 'pedro@gmail.com', '12345678', 1, 5);
+insert into usuarios values('12345678', 'admin', 'admin', 'admin', 'admin@gmail.com', '12345678', 1, 5);
 
 insert into marca values(1, 'Dewalt');
 insert into marca values(2, 'Bauker');
@@ -178,6 +179,5 @@ START WITH 1
 INCREMENT BY 1;
 
 commit;
-
 
 

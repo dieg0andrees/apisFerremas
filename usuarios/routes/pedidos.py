@@ -8,9 +8,16 @@ router = APIRouter(
     tags=["Pedidos"]
 )
 
+
 class ProductoPedido(BaseModel):
     id_producto: int
     cantidad_producto: int
+
+class PagoCrear(BaseModel):
+    fecha_pago: date
+    monto_pagar: int
+    id_medio_pago: int
+    id_estado_pago: int
 
 class PedidoCrear(BaseModel):
     fecha_pedido: date
@@ -19,6 +26,8 @@ class PedidoCrear(BaseModel):
     rut_user: str
     id_estado_pedido: int
     id_productos: list[ProductoPedido]
+    pago: PagoCrear
+
 
 @router.post("/")
 def crear_pedido(pedido: PedidoCrear):
@@ -30,6 +39,7 @@ def crear_pedido(pedido: PedidoCrear):
 
         id_pedido_var = cursor.var(int)
 
+        # Insertar el pedido
         cursor.execute("""
             BEGIN
                 INSERT INTO pedido (
@@ -54,7 +64,10 @@ def crear_pedido(pedido: PedidoCrear):
         if not pedido.id_productos:
             raise HTTPException(status_code=400, detail="La lista de productos no puede estar vacía.")
 
+        # Insertar productos del pedido
         for producto in pedido.id_productos:
+            if producto.cantidad_producto <= 0:
+                raise HTTPException(status_code=400, detail=f"La cantidad del producto {producto.id_producto} debe ser mayor a cero.")
             cursor.execute("""
                 INSERT INTO producto_pedido (id_producto_pedido, id_producto, id_pedido, cantidad_producto)
                 VALUES (seq_producto_pedido.NEXTVAL, :id_producto, :id_pedido, :cantidad_producto)
@@ -64,12 +77,33 @@ def crear_pedido(pedido: PedidoCrear):
                 "cantidad_producto": producto.cantidad_producto
             })
 
+        # Insertar el pago asociado
+        cursor.execute("""
+            INSERT INTO pago (
+                id_pago, fecha_pago, monto_pagar, id_medio_pago, id_estado_pago, id_pedido
+            ) VALUES (
+                seq_id_pago.NEXTVAL, :fecha_pago, :monto_pagar, :id_medio_pago, :id_estado_pago, :id_pedido
+            )
+        """, {
+            "fecha_pago": pedido.pago.fecha_pago,
+            "monto_pagar": pedido.pago.monto_pagar,
+            "id_medio_pago": pedido.pago.id_medio_pago,
+            "id_estado_pago": pedido.pago.id_estado_pago,
+            "id_pedido": id_pedido
+        })
+
         cone.commit()
 
         return {
-            "mensaje": "Pedido creados correctamente",
+            "mensaje": "Pedido y pago creados correctamente",
             "id_pedido": id_pedido,
-            "productos": [{"id": p.id_producto, "cantidad": p.cantidad_producto} for p in pedido.id_productos]
+            "productos": [{"id": p.id_producto, "cantidad": p.cantidad_producto} for p in pedido.id_productos],
+            "pago": {
+                "fecha_pago": pedido.pago.fecha_pago,
+                "monto_pagar": pedido.pago.monto_pagar,
+                "id_medio_pago": pedido.pago.id_medio_pago,
+                "id_estado_pago": pedido.pago.id_estado_pago
+            }
         }
 
     except Exception as ex:
@@ -82,6 +116,7 @@ def crear_pedido(pedido: PedidoCrear):
             cursor.close()
         if cone:
             cone.close()
+
 
 @router.get("/")
 def obtener_pedidos():
