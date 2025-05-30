@@ -16,6 +16,7 @@ class ProductoPedido(BaseModel):
 class PagoCrear(BaseModel):
     fecha_pago: date
     monto_pagar: int
+    url_comprobante: str
     id_medio_pago: int
     id_estado_pago: int
 
@@ -80,13 +81,14 @@ def crear_pedido(pedido: PedidoCrear):
         # Insertar el pago asociado
         cursor.execute("""
             INSERT INTO pago (
-                id_pago, fecha_pago, monto_pagar, id_medio_pago, id_estado_pago, id_pedido
+                id_pago, fecha_pago, monto_pagar, url_comprobante, id_medio_pago, id_estado_pago, id_pedido
             ) VALUES (
-                seq_id_pago.NEXTVAL, :fecha_pago, :monto_pagar, :id_medio_pago, :id_estado_pago, :id_pedido
+                seq_id_pago.NEXTVAL, :fecha_pago, :monto_pagar, :url_comprobante, :id_medio_pago, :id_estado_pago, :id_pedido
             )
         """, {
             "fecha_pago": pedido.pago.fecha_pago,
             "monto_pagar": pedido.pago.monto_pagar,
+            "url_comprobante": pedido.pago.url_comprobante,
             "id_medio_pago": pedido.pago.id_medio_pago,
             "id_estado_pago": pedido.pago.id_estado_pago,
             "id_pedido": id_pedido

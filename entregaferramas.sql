@@ -1,26 +1,32 @@
-drop table producto_pedido;
-drop table genero;
-drop table estado_pago;
-drop table marca;
-drop table medio_pago;
-drop table region;
-drop table rol;
-drop table tipo_producto;
-drop table producto;
-drop table usuarios;
-drop table pedido;
-drop sequence seq_producto_id;
-drop sequence seq_id_pedido;
-drop sequence seq_producto_pedido;
+DROP TABLE producto_pedido;
+DROP TABLE inventario;
+DROP TABLE pago;
+DROP TABLE sucursal;
+DROP TABLE pedido;
+DROP TABLE producto;
+DROP TABLE usuarios;
+DROP TABLE estado_pedido;
+DROP TABLE genero;
+DROP TABLE estado_pago;
+DROP TABLE marca;
+DROP TABLE medio_pago;
+DROP TABLE region;
+DROP TABLE rol;
+DROP TABLE tipo_producto;
+
+DROP SEQUENCE seq_producto_id;
+DROP SEQUENCE seq_id_pedido;
+DROP SEQUENCE seq_producto_pedido;
+DROP SEQUENCE seq_id_pago;
 
 CREATE TABLE GENERO (
     id_genero INTEGER PRIMARY KEY,
     descripcion VARCHAR2(50)
 );
 
-create table estado_pedido (
-    id_estado_pedido integer primary key,
-    descripcion varchar2(50)
+CREATE TABLE ESTADO_PEDIDO (
+    id_estado_pedido INTEGER PRIMARY KEY,
+    descripcion VARCHAR2(50)
 );
 
 CREATE TABLE ROL (
@@ -53,18 +59,6 @@ CREATE TABLE REGION (
     descripcion VARCHAR2(50)
 );
 
-CREATE TABLE PRODUCTO (
-    id_producto INTEGER PRIMARY KEY,
-    nombre_producto VARCHAR2(50),
-    precio_producto INTEGER,
-    stock_producto INTEGER,
-    imagenes varchar(250), 
-    id_marca INTEGER,
-    id_tipo_producto INTEGER,
-    FOREIGN KEY (id_marca) REFERENCES MARCA(id_marca),
-    FOREIGN KEY (id_tipo_producto) REFERENCES TIPO_PRODUCTO(id_tipo_producto)
-);
-
 CREATE TABLE USUARIOS (
     rut_user VARCHAR2(10) PRIMARY KEY,
     nombre_user VARCHAR2(50),
@@ -78,26 +72,40 @@ CREATE TABLE USUARIOS (
     FOREIGN KEY (id_rol) REFERENCES ROL(id_rol)
 );
 
+CREATE TABLE PRODUCTO (
+    id_producto INTEGER PRIMARY KEY,
+    nombre_producto VARCHAR2(50),
+    precio_producto INTEGER,
+    stock_producto INTEGER,
+    imagenes VARCHAR(250),
+    id_marca INTEGER,
+    id_tipo_producto INTEGER,
+    FOREIGN KEY (id_marca) REFERENCES MARCA(id_marca),
+    FOREIGN KEY (id_tipo_producto) REFERENCES TIPO_PRODUCTO(id_tipo_producto)
+);
+
+CREATE TABLE PEDIDO (
+    id_pedido INTEGER PRIMARY KEY,
+    fecha_pedido DATE,
+    cantidad_pedido INTEGER,
+    subtotal_pedido INTEGER,
+    rut_user VARCHAR2(10),
+    id_estado_pedido INTEGER,
+    FOREIGN KEY (rut_user) REFERENCES USUARIOS(rut_user),
+    FOREIGN KEY (id_estado_pedido) REFERENCES ESTADO_PEDIDO(id_estado_pedido)
+);
+
 CREATE TABLE PAGO (
     id_pago INTEGER PRIMARY KEY,
     fecha_pago DATE,
     monto_pagar INTEGER,
+    url_comprobante varchar2(100),
     id_medio_pago INTEGER,
     id_estado_pago INTEGER,
     id_pedido INTEGER,
     FOREIGN KEY (id_medio_pago) REFERENCES MEDIO_PAGO(id_medio_pago),
     FOREIGN KEY (id_estado_pago) REFERENCES ESTADO_PAGO(id_estado_pago),
     FOREIGN KEY (id_pedido) REFERENCES PEDIDO(id_pedido)
-);
-
-CREATE TABLE INVENTARIO (
-    id_inventario INTEGER PRIMARY KEY,
-    ubicacion VARCHAR2(50),
-    fecha_ultima_actualizacion DATE,
-    id_producto INTEGER,
-    id_sucursal INTEGER,
-    FOREIGN KEY (id_producto) REFERENCES PRODUCTO(id_producto),
-    FOREIGN KEY (id_sucursal) REFERENCES SUCURSAL(id_sucursal)
 );
 
 CREATE TABLE SUCURSAL (
@@ -111,79 +119,80 @@ CREATE TABLE SUCURSAL (
     FOREIGN KEY (id_pago) REFERENCES PAGO(id_pago)
 );
 
-CREATE TABLE PEDIDO (
-    id_pedido INTEGER PRIMARY KEY,
-    fecha_pedido DATE,
-    cantidad_pedido INTEGER,
-    subtotal_pedido INTEGER,
-    rut_user VARCHAR2(10),
-    id_estado_pedido integer,
-    FOREIGN KEY (rut_user) REFERENCES USUARIOS(rut_user),
-    FOREIGN key (id_estado_pedido) references estado_pedido(id_estado_pedido)
+CREATE TABLE INVENTARIO (
+    id_inventario INTEGER PRIMARY KEY,
+    ubicacion VARCHAR2(50),
+    fecha_ultima_actualizacion DATE,
+    id_producto INTEGER,
+    id_sucursal INTEGER,
+    FOREIGN KEY (id_producto) REFERENCES PRODUCTO(id_producto),
+    FOREIGN KEY (id_sucursal) REFERENCES SUCURSAL(id_sucursal)
 );
 
-create table producto_pedido (
-    id_producto_pedido integer primary key,
-    id_producto integer,
-    id_pedido integer,
-    cantidad_producto integer,
-    FOREIGN key (id_producto) references producto(id_producto),
-    FOREIGN key (id_pedido) references pedido(id_pedido)
+CREATE TABLE PRODUCTO_PEDIDO (
+    id_producto_pedido INTEGER PRIMARY KEY,
+    id_producto INTEGER,
+    id_pedido INTEGER,
+    cantidad_producto INTEGER,
+    FOREIGN KEY (id_producto) REFERENCES PRODUCTO(id_producto),
+    FOREIGN KEY (id_pedido) REFERENCES PEDIDO(id_pedido)
 );
 
+CREATE SEQUENCE seq_producto_id START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_id_pedido START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_producto_pedido START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_id_pago START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
-insert into genero values(1, 'Masculino');
-insert into genero values(2, 'Femenino');
-insert into genero values(3, 'Otro');
-insert into genero values(4, 'Prefiere no decirlo');
+-- GENERO
+INSERT INTO genero VALUES (1, 'Masculino');
+INSERT INTO genero VALUES (2, 'Femenino');
+INSERT INTO genero VALUES (3, 'Otro');
+INSERT INTO genero VALUES (4, 'Prefiere no decirlo');
 
-insert into rol values(1, 'Cliente');
-insert into rol values(2, 'Vendedor');
-insert into rol values(3, 'bodeguero');
-insert into rol values(4, 'Contador');
-insert into rol values(5, 'Admin');
+-- ROL
+INSERT INTO rol VALUES (1, 'Cliente');
+INSERT INTO rol VALUES (2, 'Vendedor');
+INSERT INTO rol VALUES (3, 'Bodeguero');
+INSERT INTO rol VALUES (4, 'Contador');
+INSERT INTO rol VALUES (5, 'Admin');
 
-insert into usuarios values('12345678', 'admin', 'admin', 'admin', 'admin@gmail.com', '12345678', 1, 5);
+-- USUARIO ADMIN
+INSERT INTO usuarios VALUES ('12345678', 'admin', 'admin', 'admin', 'admin@gmail.com', '12345678', 1, 5);
 
-insert into marca values(1, 'Dewalt');
-insert into marca values(2, 'Bauker');
-insert into marca values(3, 'Knipex');
-insert into marca values(4, 'Stanley');
-insert into marca values(5, 'Makita');
-insert into marca values(6, 'Telwin');
+-- MARCA
+INSERT INTO marca VALUES (1, 'Dewalt');
+INSERT INTO marca VALUES (2, 'Bauker');
+INSERT INTO marca VALUES (3, 'Knipex');
+INSERT INTO marca VALUES (4, 'Stanley');
+INSERT INTO marca VALUES (5, 'Makita');
+INSERT INTO marca VALUES (6, 'Telwin');
 
-insert into tipo_producto values(1, 'Herramienta Electrica');
-insert into tipo_producto values(2, 'Herramienta Manuales');
-insert into tipo_producto values(3, 'Herramienta Medicion');
-insert into tipo_producto values(4, 'Herramienta Corte');
-insert into tipo_producto values(5, 'Materiales de construccion');
+-- TIPO PRODUCTO
+INSERT INTO tipo_producto VALUES (1, 'Herramienta Electrica');
+INSERT INTO tipo_producto VALUES (2, 'Herramienta Manuales');
+INSERT INTO tipo_producto VALUES (3, 'Herramienta Medicion');
+INSERT INTO tipo_producto VALUES (4, 'Herramienta Corte');
+INSERT INTO tipo_producto VALUES (5, 'Materiales de construccion');
 
-insert into estado_pedido values(1, 'Por pagar');
-insert into estado_pedido values(2, 'Pagado');
-insert into estado_pedido values(3, 'Aprobado');
-insert into estado_pedido values(4, 'Rechazado');
-insert into estado_pedido values(5, 'Entregado');
-insert into estado_pedido values(6, 'Preparado');
-insert into estado_pedido values(7, 'En preparacion');
+-- ESTADO PEDIDO
+INSERT INTO estado_pedido VALUES (1, 'Por pagar');
+INSERT INTO estado_pedido VALUES (2, 'Pagado');
+INSERT INTO estado_pedido VALUES (3, 'Aprobado');
+INSERT INTO estado_pedido VALUES (4, 'Rechazado');
+INSERT INTO estado_pedido VALUES (5, 'Entregado');
+INSERT INTO estado_pedido VALUES (6, 'Preparado');
+INSERT INTO estado_pedido VALUES (7, 'En preparacion');
 
-create sequence seq_producto_id
-start with 1 
-increment by 1;
+-- MEDIO PAGO
+INSERT INTO medio_pago VALUES (1, 'Paypal');
+INSERT INTO medio_pago VALUES (2, 'Transferencia');
 
-CREATE SEQUENCE seq_id_pedido
-START WITH 1
-INCREMENT BY 1;
+-- ESTADO PAGO
+INSERT INTO estado_pago VALUES (1, 'Por aprobar');
+INSERT INTO estado_pago VALUES (2, 'Aprobado');
 
-CREATE SEQUENCE seq_producto_pedido
-START WITH 1
-INCREMENT BY 1;
+-- PRODUCTO
+INSERT INTO producto VALUES (1, 'Martillo', 15990, 100, 'imagenes_productos/martillo.png', 1, 1);
+INSERT INTO producto VALUES (2, 'Taladro Inalambrico', 13990, 100, 'imagenes_productos/taladro_bosh.png', 2, 2);
 
-CREATE SEQUENCE seq_id_pago
-START WITH 1
-INCREMENT BY 1
-NOCACHE
-NOCYCLE;
-
-commit;
-
-
+COMMIT;
