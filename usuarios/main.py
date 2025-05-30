@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from usuarios.routes import usuarios, pedidos, producto_pedidos
+from usuarios.routes import usuarios, pedidos, producto_pedidos, pago
 
 app = FastAPI(
     title="API de gestion de usuarios para Ferramas",
@@ -10,3 +10,4 @@ app = FastAPI(
 app.include_router(usuarios.router)
 app.include_router(pedidos.router)
 app.include_router(producto_pedidos.router)
+app.include_router(pago.router)
