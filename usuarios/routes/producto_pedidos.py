@@ -63,17 +63,24 @@ def detalle_pedido(id_pedido: int):
         cone = get_conexion()
         cursor = cone.cursor()
         cursor.execute("""
-            SELECT
-                producto.NOMBRE_PRODUCTO,
-                marca.DESCRIPCION,
-                producto.PRECIO_PRODUCTO,
-                tipo_producto.DESCRIPCION as tp,
-                producto_pedido.CANTIDAD_PRODUCTO
-            FROM producto_pedido
-            JOIN producto ON producto_pedido.ID_PRODUCTO = producto.ID_PRODUCTO
-            JOIN marca ON producto.ID_MARCA = marca.ID_MARCA
-            JOIN tipo_producto ON producto.ID_TIPO_PRODUCTO = tipo_producto.ID_TIPO_PRODUCTO
-            WHERE producto_pedido.ID_PEDIDO = :id_pedido
+        SELECT   
+            producto.NOMBRE_PRODUCTO,
+            marca.DESCRIPCION,
+            producto.PRECIO_PRODUCTO,
+            tipo_producto.DESCRIPCION as tp,
+            producto_pedido.CANTIDAD_PRODUCTO,
+            ESTADO_PEDIDO.DESCRIPCION,
+            pedido.RUT_USER,
+            usuarios.nombre_user,
+            usuarios.P_APELLIDO
+        FROM producto_pedido
+        JOIN producto ON producto_pedido.ID_PRODUCTO = producto.ID_PRODUCTO
+        JOIN marca ON producto.ID_MARCA = marca.ID_MARCA
+        JOIN tipo_producto ON producto.ID_TIPO_PRODUCTO = tipo_producto.ID_TIPO_PRODUCTO
+        join pedido on producto_pedido.ID_PEDIDO = pedido.ID_PEDIDO
+        join estado_pedido on ESTADO_PEDIDO.ID_ESTADO_PEDIDO = PEDIDO.ID_ESTADO_PEDIDO
+        join usuarios on pedido.RUT_USER = usuarios.RUT_USER
+        where producto_pedido.id_pedido =: id_pedido                       
         """, {"id_pedido": id_pedido})
 
         detalles = cursor.fetchall()
@@ -90,7 +97,11 @@ def detalle_pedido(id_pedido: int):
                 "marca_descripcion": detalle[1],
                 "precio_producto": detalle[2],
                 "tipo_producto": detalle[3],
-                "cantidad_producto": detalle[4]
+                "cantidad_producto": detalle[4],
+                "estado_pedido": detalle[5],
+                "rut_user": detalle[6],
+                "nombre_user": detalle[7],
+                "primer_apellido": detalle[8]
             })
 
         return {
