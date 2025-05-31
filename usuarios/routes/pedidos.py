@@ -256,53 +256,51 @@ def actualizar_pedido(id_pedido: int, pedido: PedidoCrear):
 
 from typing import Optional
 
-@router.patch("/{id_pedido}")
-def actualizar_parcial_pedido(
-    id_pedido: int,
-    fecha_pedido: Optional[date] = None,
-    cantidad_pedido: Optional[int] = None,
-    subtotal_pedido: Optional[int] = None,
-    rut_user: Optional[str] = None,
+class PedidoActualizar(BaseModel):
+    fecha_pedido: Optional[str] = None  # Puedes usar 'str' si no trabajas con 'date'
+    cantidad_pedido: Optional[int] = None
+    subtotal_pedido: Optional[int] = None
+    rut_user: Optional[str] = None
     id_estado_pedido: Optional[int] = None
-):
+
+
+@router.patch("/{id_pedido}")
+def actualizar_pedido(id_pedido: int, datos: PedidoActualizar):
     try:
-        if not any([fecha_pedido, cantidad_pedido, subtotal_pedido, rut_user, id_estado_pedido]):
+        campos = []
+        valores = {"id_pedido": id_pedido}
+
+        if datos.fecha_pedido is not None:
+            campos.append("FECHA_PEDIDO = :fecha_pedido")
+            valores["fecha_pedido"] = datos.fecha_pedido
+        if datos.cantidad_pedido is not None:
+            campos.append("CANTIDAD_PEDIDO = :cantidad_pedido")
+            valores["cantidad_pedido"] = datos.cantidad_pedido
+        if datos.subtotal_pedido is not None:
+            campos.append("SUBTOTAL_PEDIDO = :subtotal_pedido")
+            valores["subtotal_pedido"] = datos.subtotal_pedido
+        if datos.rut_user is not None:
+            campos.append("RUT_USER = :rut_user")
+            valores["rut_user"] = datos.rut_user
+        if datos.id_estado_pedido is not None:
+            campos.append("ID_ESTADO_PEDIDO = :id_estado_pedido")
+            valores["id_estado_pedido"] = datos.id_estado_pedido
+
+        if not campos:
             raise HTTPException(status_code=400, detail="Debe enviar al menos un campo para actualizar")
 
         cone = get_conexion()
         cursor = cone.cursor()
+        cursor.execute(f"""
+            UPDATE PEDIDO
+            SET {', '.join(campos)}
+            WHERE ID_PEDIDO = :id_pedido
+        """, valores)
 
-        # Verificar si el pedido existe
-        cursor.execute("SELECT COUNT(*) FROM pedido WHERE id_pedido = :id_pedido", {"id_pedido": id_pedido})
-        if cursor.fetchone()[0] == 0:
+        if cursor.rowcount == 0:
             cursor.close()
             cone.close()
             raise HTTPException(status_code=404, detail="Pedido no encontrado")
-
-        campos = []
-        valores = {"id_pedido": id_pedido}
-
-        if fecha_pedido:
-            campos.append("fecha_pedido = :fecha_pedido")
-            valores["fecha_pedido"] = fecha_pedido
-        if cantidad_pedido:
-            campos.append("cantidad_pedido = :cantidad_pedido")
-            valores["cantidad_pedido"] = cantidad_pedido
-        if subtotal_pedido:
-            campos.append("subtotal_pedido = :subtotal_pedido")
-            valores["subtotal_pedido"] = subtotal_pedido
-        if rut_user:
-            campos.append("rut_user = :rut_user")
-            valores["rut_user"] = rut_user
-        if id_estado_pedido:
-            campos.append("id_estado_pedido = :id_estado_pedido")
-            valores["id_estado_pedido"] = id_estado_pedido
-
-        cursor.execute(f"""
-            UPDATE pedido
-            SET {', '.join(campos)}
-            WHERE id_pedido = :id_pedido
-        """, valores)
 
         cone.commit()
         cursor.close()

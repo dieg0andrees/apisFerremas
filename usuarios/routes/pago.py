@@ -46,39 +46,46 @@ def obtener_pagos():
 
 from typing import Optional
 
+
+class PagoActualizar(BaseModel):
+    fecha_pago: Optional[str] = None
+    monto_pagar: Optional[float] = None
+    url_comprobante: Optional[str] = None
+    id_medio_pago: Optional[int] = None
+    id_estado_pago: Optional[int] = None
+    id_pedido: Optional[int] = None
+
+
 @router.patch("/{id_pago}")
-def actualizar_pago_parcial(id_pago: int, fecha_pago: Optional[str] = None, monto_pagar: Optional[float] = None,
-                            url_comprobante: Optional[str] = None, id_medio_pago: Optional[int] = None,
-                            id_estado_pago: Optional[int] = None, id_pedido: Optional[int] = None):
+def actualizar_pago(id_pago: int, datos: PagoActualizar):
     try:
-        if not any([fecha_pago, monto_pagar, url_comprobante, id_medio_pago, id_estado_pago, id_pedido]):
+        campos = []
+        valores = {"id_pago": id_pago}
+
+        if datos.fecha_pago is not None:
+            campos.append("FECHA_PAGO = :fecha_pago")
+            valores["fecha_pago"] = datos.fecha_pago
+        if datos.monto_pagar is not None:
+            campos.append("MONTO_PAGAR = :monto_pagar")
+            valores["monto_pagar"] = datos.monto_pagar
+        if datos.url_comprobante is not None:
+            campos.append("URL_COMPROBANTE = :url_comprobante")
+            valores["url_comprobante"] = datos.url_comprobante
+        if datos.id_medio_pago is not None:
+            campos.append("ID_MEDIO_PAGO = :id_medio_pago")
+            valores["id_medio_pago"] = datos.id_medio_pago
+        if datos.id_estado_pago is not None:
+            campos.append("ID_ESTADO_PAGO = :id_estado_pago")
+            valores["id_estado_pago"] = datos.id_estado_pago
+        if datos.id_pedido is not None:
+            campos.append("ID_PEDIDO = :id_pedido")
+            valores["id_pedido"] = datos.id_pedido
+
+        if not campos:
             raise HTTPException(status_code=400, detail="Debe enviar al menos un campo para actualizar")
 
         cone = get_conexion()
         cursor = cone.cursor()
-
-        campos = []
-        valores = {"id_pago": id_pago}
-
-        if fecha_pago:
-            campos.append("FECHA_PAGO = :fecha_pago")
-            valores["fecha_pago"] = fecha_pago
-        if monto_pagar:
-            campos.append("MONTO_PAGAR = :monto_pagar")
-            valores["monto_pagar"] = monto_pagar
-        if url_comprobante:
-            campos.append("URL_COMPROBANTE = :url_comprobante")
-            valores["url_comprobante"] = url_comprobante
-        if id_medio_pago:
-            campos.append("ID_MEDIO_PAGO = :id_medio_pago")
-            valores["id_medio_pago"] = id_medio_pago
-        if id_estado_pago:
-            campos.append("ID_ESTADO_PAGO = :id_estado_pago")
-            valores["id_estado_pago"] = id_estado_pago
-        if id_pedido:
-            campos.append("ID_PEDIDO = :id_pedido")
-            valores["id_pedido"] = id_pedido
-
         cursor.execute(f"""
             UPDATE PAGO
             SET {', '.join(campos)}
@@ -93,12 +100,13 @@ def actualizar_pago_parcial(id_pago: int, fecha_pago: Optional[str] = None, mont
         cone.commit()
         cursor.close()
         cone.close()
+
         return {"mensaje": "Pago actualizado correctamente"}
 
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))
 
-@router.get("{id_pago}")
+@router.get("/{id_pago}")
 def buscar_pago(id_pago: int):
     try:
         cone = get_conexion()
