@@ -23,16 +23,20 @@ def obtener_productos_pedidos():
             producto.PRECIO_PRODUCTO,
             tipo_producto.DESCRIPCION as tp,
             producto_pedido.CANTIDAD_PRODUCTO,
-            ESTADO_PEDIDO.DESCRIPCION
+            ESTADO_PEDIDO.DESCRIPCION,
+            pedido.RUT_USER,
+            usuarios.nombre_user,
+            usuarios.P_APELLIDO
         FROM producto_pedido
         join producto on producto_pedido.ID_PRODUCTO = producto.ID_PRODUCTO
         join marca on producto.id_marca = marca.id_marca
         join tipo_producto on producto.ID_TIPO_PRODUCTO = tipo_producto.ID_TIPO_PRODUCTO
         join pedido on producto_pedido.ID_PEDIDO = pedido.ID_PEDIDO
         join estado_pedido on ESTADO_PEDIDO.ID_ESTADO_PEDIDO = PEDIDO.ID_ESTADO_PEDIDO
+        join usuarios on pedido.RUT_USER = usuarios.RUT_USER
         """)
         producto_pedidos = []
-        for id_pedido, nombre_producto, descripcion, precio_producto, tp, cantidad_producto, ep in cursor:
+        for id_pedido, nombre_producto, descripcion, precio_producto, tp, cantidad_producto, ep, rut, nombre_user, apellido in cursor:
             producto_pedidos.append({
                 "id_pedido": id_pedido,
                 "nombre_producto": nombre_producto,
@@ -40,7 +44,10 @@ def obtener_productos_pedidos():
                 "precio_producto": precio_producto,
                 "tipo_producto": tp,
                 "cantidad_producto": cantidad_producto,
-                "estado_pedido": ep
+                "estado_pedido": ep,
+                "rut": rut,
+                "nombre_user": nombre_user,
+                "apellido": apellido
             })
         cursor.close()
         cone.close()
