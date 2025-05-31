@@ -98,5 +98,40 @@ def actualizar_pago_parcial(id_pago: int, fecha_pago: Optional[str] = None, mont
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))
 
+@router.get("{id_pago}")
+def buscar_pago(id_pago: int):
+    try:
+        cone = get_conexion()
+        cursor = cone.cursor()
+        cursor.execute("""
+        SELECT
+            PAGO.FECHA_PAGO,
+            PAGO.MONTO_PAGAR,
+            PAGO.URL_COMPROBANTE,
+            MEDIO_PAGO.DESCRIPCION,
+            ESTADO_PAGO.DESCRIPCION,
+            PAGO.ID_PEDIDO
+        FROM PAGO
+        JOIN MEDIO_PAGO ON PAGO.ID_MEDIO_PAGO = MEDIO_PAGO.ID_MEDIO_PAGO
+        JOIN ESTADO_PAGO ON PAGO.ID_ESTADO_PAGO = ESTADO_PAGO.ID_ESTADO_PAGO
+        where id_pago =: id_pago
+        """, {"id_pago": id_pago})
+        
+        pago = cursor.fetchone()
+        cursor.close()
+        cone.close()
+        if not pago:
+            raise HTTPException(status_code=404, detail="Pago no encontrado")
+        return{
+            "id_pago": id_pago,
+            "fecha_pago": pago[0],
+            "monto_pagar": pago[1],
+            "url_comprobante": pago[2],
+            "medio_pago": pago[3],
+            "estado_pago": pago[4],
+            "id_pedido": pago[5]
+        }
+    except Exception as ex:
+        raise HTTPException (status_code=500, detail=str(ex))
 
 
