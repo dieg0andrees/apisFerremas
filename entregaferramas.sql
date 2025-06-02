@@ -157,7 +157,11 @@ INSERT INTO rol VALUES (4, 'Contador');
 INSERT INTO rol VALUES (5, 'Admin');
 
 -- USUARIO ADMIN
-INSERT INTO usuarios VALUES ('12345678', 'admin', 'admin', 'admin', 'admin@gmail.com', '12345678', 1, 5);
+INSERT INTO usuarios VALUES ('230963223', 'admin', 'admin', 'admin', 'admin@gmail.com', '1234', 1, 5);
+insert into usuarios values('146957293', 'vendedor', 'vendedor', 'vendedor', 'vendedor@gmail.com', '1234', 2, 2);
+insert into usuarios values('98323856', 'cliente', 'cliente', 'cliente', 'cliente@gmail.com', '1234', 1, 1);
+insert into usuarios values('192353513', 'bodeguero', 'bodeguero', 'bodeguero', 'bodeguero@gmail.com', '1234', 1, 3);
+insert into usuarios values('161713988', 'contador', 'contador', 'contador', 'contador@gmail.com', '1234', 1, 4);
 
 -- MARCA
 INSERT INTO marca VALUES (1, 'Dewalt');
@@ -194,5 +198,18 @@ INSERT INTO estado_pago VALUES (2, 'Aprobado');
 -- PRODUCTO
 INSERT INTO producto VALUES (1, 'Martillo', 15990, 100, 'imagenes_productos/martillo.png', 1, 1);
 INSERT INTO producto VALUES (2, 'Taladro Inalambrico', 13990, 100, 'imagenes_productos/taladro_bosh.png', 2, 2);
+insert into producto values(3,'Cierra electrica', 42000, 3, 'imagenes_productos/cierra_electrica.png', 2, 1);
+insert into producto values(4,'Esmeril', 25000, 20, 'imagenes_productos/esmeril.png', 5, 1);
+insert into producto values(5,'Lijadora', 49000, 15, 'imagenes_productos/lijadora.png', 1, 1);
+insert into producto values(6,'Dremel', 39000, 10, 'imagenes_productos/dremel.png', 6, 1);
+insert into producto values(7,'Saco cemento', 35000, 80, 'imagenes_productos/saco_cemento.png', 3, 5);
+insert into producto values(8,'Cepillo electrico', 244000, 5, 'imagenes_productos/cepillo_electrico.png', 2, 1);
+insert into producto values(9,'Cinta metrica', 14500, 30, 'imagenes_productos/cinta_metrica.png', 1, 2);
+insert into producto values(10,'Caladora', 4990, 15, 'imagenes_productos/caladora.png', 2, 1);
+insert into producto values(11,'Serrucho', 15500, 25, 'imagenes_productos/serrucho.png', 4, 4);
+insert into producto values(12,'Set desatornillador', 35500, 20, 'imagenes_productos/desatornilladores.png', 5, 2);
+insert into producto values(13,'Cierra circular', 57000, 17, 'imagenes_productos/cierra_circular.png', 6, 4);
+insert into producto values(14,'Motosierra', 363000, 5, 'imagenes_productos/motosierra.png', 2, 4);
+insert into producto values(15,'Alicate', 5500, 55, 'imagenes_productos/alicate.png', 1, 2);
 
 COMMIT;
